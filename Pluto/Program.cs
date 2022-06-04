@@ -1,42 +1,41 @@
-﻿using System;
+using System;
 
 namespace PlutoNS
 {
-    public struct Point
-    {
-        public int x;
-        public int y;
+	public struct Point
+	{
+		public int x { get; set; }
+		public int y { get; set; }
 
-        public Point(int x, int y) : this()
-        {
-            this.x = x;
-            this.y = y;
-        }
-    }
-    public struct PlutoPosition
-    {
-        public char cdir;
-        public int x;
-        public int y;
+		public Point(int x, int y) : this()
+		{
+			this.x = x;
+			this.y = y;
+		}
+	}
+	public struct PlutoPosition
+	{
+		public char cdir { get; set; }
+		public int x { get; set; }
+		public int y { get; set; }
 
-        public PlutoPosition(char cdir, int x, int y) : this()
-        {
-            this.cdir = cdir;
-            this.x = x;
-            this.y = y;
-        }
-    }
-    public class PlutoMob
-    {
-        public Point p = new Point(0,0);
-        public bool obstacleAppeared = false;
+		public PlutoPosition(char cdir, int x, int y) : this()
+		{
+			this.cdir = cdir;
+			this.x = x;
+			this.y = y;
+		}
+	}
+	public class PlutoMob
+	{
+		public Point p { get; set; } = new Point(0, 0);
+		public bool obstacleAppeared { get; private set; }
 
-        private static int MaxX = 100;
-        private static int MaxY = 100;
+		private static readonly int MaxX = 100;
+		private static readonly int MaxY = 100;
+		public Direction direction { get; private set; } = new Direction('N');
 
-        public Direction direction = new Direction('N');
-
-        private List<Point> obstacle = new List<Point>();
+		private List<Point> obstacle = new List<Point>();
         public void SetObstacle(List<Point> v)
         {
             obstacle = v;
@@ -98,7 +97,7 @@ namespace PlutoNS
                     case 'B': Move(false); break;
                     case 'R':
                     case 'L': direction.Turn(ch); break;
-                    default: throw new Exception("Invalid char "+ch);
+                    default: throw new ArgumentOutOfRangeException("Invalid char "+ch);
                 }
                 System.Diagnostics.Debug.WriteLine("{0} {1} {2} {3}", ch.ToString(), direction.AsChar(), p.x, p.y);
                 if (obstacle.Contains(p))
@@ -108,8 +107,8 @@ namespace PlutoNS
                     break;
                 }
             }
-            return new PlutoPosition(direction.AsChar(), p.x, p.y);
-        }
+			return new PlutoPosition(direction.AsChar(), p.x, p.y);
+		}
         public static void Main() {
             PlutoMob pm = new PlutoMob();
             var p = pm.Run("FFLFF");
