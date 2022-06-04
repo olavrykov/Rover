@@ -1,35 +1,34 @@
-﻿// See https://aka.ms/new-console-template for more information
-// Console.WriteLine("Hello, World!");
+﻿using System;
 
-using System;
-
-namespace PlutoNS {
-
-    public class Direction
+namespace PlutoNS
+{
+    public struct Point
     {
-        // 0 north 1 east 2 south 3 west
-        public int state = 0;
-        private static Dictionary<char, int> coder = new Dictionary<char, int> { { 'L', -1 }, { 'R', 1 } };
-        private static char[] StateC = { 'N', 'E', 'S', 'W' };
-        public Direction(char v)
-        {
-            state = Array.IndexOf(StateC, v);
-        }
+        public int x;
+        public int y;
 
-        public char AsChar() { return StateC[state]; }
-        public void Turn(char v)
+        public Point(int x, int y) : this()
         {
-            Turn(coder[v]); // L,R
+            this.x = x;
+            this.y = y;
         }
-        public void Turn(int v)
+    }
+    public struct PlutoPosition
+    {
+        public char cdir;
+        public int x;
+        public int y;
+
+        public PlutoPosition(char cdir, int x, int y) : this()
         {
-            state = (state + v + 4) % 4;
+            this.cdir = cdir;
+            this.x = x;
+            this.y = y;
         }
     }
     public class PlutoMob
     {
-        public int x = 0;
-        public int y = 0;
+        public Point p = new Point(0,0);
         public bool obstacleAppeared = false;
 
         private static int MaxX = 100;
@@ -37,25 +36,26 @@ namespace PlutoNS {
 
         public Direction direction = new Direction('N');
 
-        private List<Tuple<int,int>> obstacle = new List<Tuple<int, int>>();
-        public void SetObstacle(List<Tuple<int, int>> v)
+        private List<Point> obstacle = new List<Point>();
+        public void SetObstacle(List<Point> v)
         {
             obstacle = v;
         }
-        public PlutoMob() { }
-        private Tuple<int, int> NewPosition(bool forward, int dir)
+        public PlutoMob() 
         {
-            // todo: check direction
-            // default: throw new Exception("invalid direction");
-            var x = this.x;
-            var y = this.y;
-            if(forward)
+            // for testing purposes
+        }
+        private Point NewPosition(bool forward, int dir)
+        {
+            var p = this.p;
+            if (forward)
                 switch (dir)
                 {
                     case 0: Move(0, 1); break;
                     case 1: Move(1, 0); break;
                     case 2: Move(0, -1); break;
                     case 3: Move(-1, 0); break;
+                    default: Move(0, 0); break;
                 }
             else
                 switch (dir)
@@ -64,20 +64,20 @@ namespace PlutoNS {
                     case 1: Move(-1, 0); break;
                     case 2: Move(0, 1); break;
                     case 3: Move(1, 0); break;
+                    default: Move(0, 0); break;
                 }
-            return Tuple.Create(x, y);
+            return p;
 
             void Move(int dx, int dy)
             {
-                x = (x + dx + MaxX) % MaxX;
-                y = (y + dy + MaxY) % MaxY;
+                p.x = (p.x + dx + MaxX) % MaxX;
+                p.y = (p.y + dy + MaxY) % MaxY;
             }
         }
         private void Move(bool forward)
         {
             var pos = NewPosition(forward, direction.state);
-            x = pos.Item1;
-            y = pos.Item2;
+            p = pos;
         }
 
         public bool TryMove(bool forward)
@@ -86,13 +86,12 @@ namespace PlutoNS {
             return !obstacle.Contains(pos);
         }
 
-        public Tuple<char, int, int> Run(string rout)
+        public PlutoPosition Run(string rout)
         {
             obstacleAppeared = false;
             foreach (char ch in rout)
             {
-                var oldx = x;
-                var oldy = y;
+                var oldp = p;
                 switch (ch)
                 {
                     case 'F': Move(true); break;
@@ -101,20 +100,15 @@ namespace PlutoNS {
                     case 'L': direction.Turn(ch); break;
                     default: throw new Exception("Invalid char "+ch);
                 }
-                System.Diagnostics.Debug.WriteLine("{0} {1} {2} {3} ", ch.ToString(), direction.AsChar(), x, y);
-                var pos = Tuple.Create(x, y);
-
-                if (obstacle.Contains(pos))
+                System.Diagnostics.Debug.WriteLine("{0} {1} {2} {3}", ch.ToString(), direction.AsChar(), p.x, p.y);
+                if (obstacle.Contains(p))
                 {
-                    x = oldx;
-                    y = oldy;
-                    var res1 = new Tuple<char, int, int>(direction.AsChar(), x, y);
+                    p = oldp;
                     obstacleAppeared = true;
-                    return res1;
+                    break;
                 }
             }
-            var res = new Tuple<char, int, int>(direction.AsChar(), x, y);
-            return res;
+            return new PlutoPosition(direction.AsChar(), p.x, p.y);
         }
         public static void Main() {
             PlutoMob pm = new PlutoMob();
@@ -122,5 +116,4 @@ namespace PlutoNS {
             Console.WriteLine("finished " +p.ToString());
         }
     }
-
 }
